@@ -20,6 +20,9 @@ type Selector
     | Containing (List Selector)
     | Text String
     | Attribute String String
+    | Class String
+    | Classes (List String)
+    | Style String String
     | All (List Selector)
 
 
@@ -153,6 +156,18 @@ singleSelectorParser =
                 , Parser.succeed "false"
                     |. Parser.keyword "False"
                 ]
+        , Parser.succeed Class
+            |. Parser.keyword "class "
+            |= Parser.Extra.String.string
+        , Parser.succeed Classes
+            |. Parser.keyword "classes "
+            |= (Parser.Extra.String.string |> Parser.map (String.split " "))
+        , Parser.succeed Style
+            |. Parser.keyword "styles"
+            |. Parser.symbol " "
+            |= (Parser.getChompedString <| Parser.chompUntil ":")
+            |. Parser.symbol ":"
+            |= (Parser.getChompedString <| Parser.chompWhile (\c -> c /= ' ' && c /= ','))
         , Parser.succeed Containing
             |. Parser.keyword "containing "
             |= Parser.lazy (\() -> selectorsParser)

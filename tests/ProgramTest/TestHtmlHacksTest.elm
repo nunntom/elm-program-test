@@ -186,6 +186,184 @@ all =
                                     )
                                 )
                             )
+            , test "parses an event failure when a step involves Selector.class " <|
+                \() ->
+                    parse
+                        [ "▼ Query.fromHtml"
+                        , ""
+                        , "    <body>"
+                        , "        <span class=\"class\">"
+                        , "            <button>"
+                        , "                CLICK"
+                        , "            </button>"
+                        , "        </span>"
+                        , "    </body>"
+                        , ""
+                        , ""
+                        , "▼ Query.find [ class \"class\" ]"
+                        , ""
+                        , "    1)  <span class=\"class\">"
+                        , "            <button>"
+                        , "                CLICK"
+                        , "            </button>"
+                        , "        </span>"
+                        , ""
+                        , ""
+                        , "▼ Query.has [ tag \"form\", containing [ tag \"input\", attribute \"type\" \"submit\", attribute \"value\" \"CLICKY\" ]  ]"
+                        , ""
+                        , "✗ has tag \"form\""
+                        , "✗ has containing [ tag \"input\", attribute \"type\" \"submit\", attribute \"value\" \"CLICKY\" ]"
+                        ]
+                        |> Expect.equal
+                            (Ok
+                                (QueryFailure
+                                    (Element "body"
+                                        []
+                                        [ Element "span"
+                                            [ ( "class", "class" ) ]
+                                            [ Element "button" [] [ Html.Parser.Text "CLICK" ] ]
+                                        ]
+                                    )
+                                    [ FindStep [ Class "class" ]
+                                        (Element "span"
+                                            [ ( "class", "class" ) ]
+                                            [ Element "button" [] [ Html.Parser.Text "CLICK" ] ]
+                                        )
+                                    ]
+                                    (Has
+                                        [ Tag "form"
+                                        , Containing
+                                            [ Tag "input"
+                                            , Attribute "type" "submit"
+                                            , Attribute "value" "CLICKY"
+                                            ]
+                                        ]
+                                        [ Err "has tag \"form\""
+                                        , Err "has containing [ tag \"input\", attribute \"type\" \"submit\", attribute \"value\" \"CLICKY\" ]"
+                                        ]
+                                    )
+                                )
+                            )
+            , test "parses an event failure when step involves Selector.classes" <|
+                \() ->
+                    parse
+                        [ "▼ Query.fromHtml"
+                        , ""
+                        , "    <body>"
+                        , "        <span class=\"class class2\">"
+                        , "            <button>"
+                        , "                CLICK"
+                        , "            </button>"
+                        , "        </span>"
+                        , "    </body>"
+                        , ""
+                        , ""
+                        , "▼ Query.find [ classes \"class class2\" ]"
+                        , ""
+                        , "    1)  <span class=\"class class2\">"
+                        , "            <button>"
+                        , "                CLICK"
+                        , "            </button>"
+                        , "        </span>"
+                        , ""
+                        , ""
+                        , "▼ Query.has [ tag \"form\", containing [ tag \"input\", attribute \"type\" \"submit\", attribute \"value\" \"CLICKY\" ]  ]"
+                        , ""
+                        , "✗ has tag \"form\""
+                        , "✗ has containing [ tag \"input\", attribute \"type\" \"submit\", attribute \"value\" \"CLICKY\" ]"
+                        ]
+                        |> Expect.equal
+                            (Ok
+                                (QueryFailure
+                                    (Element "body"
+                                        []
+                                        [ Element "span"
+                                            [ ( "class", "class class2" ) ]
+                                            [ Element "button" [] [ Html.Parser.Text "CLICK" ] ]
+                                        ]
+                                    )
+                                    [ FindStep
+                                        [ Classes [ "class", "class2" ] ]
+                                        (Element "span"
+                                            [ ( "class", "class class2" ) ]
+                                            [ Element "button" [] [ Html.Parser.Text "CLICK" ] ]
+                                        )
+                                    ]
+                                    (Has
+                                        [ Tag "form"
+                                        , Containing
+                                            [ Tag "input"
+                                            , Attribute "type" "submit"
+                                            , Attribute "value" "CLICKY"
+                                            ]
+                                        ]
+                                        [ Err "has tag \"form\""
+                                        , Err "has containing [ tag \"input\", attribute \"type\" \"submit\", attribute \"value\" \"CLICKY\" ]"
+                                        ]
+                                    )
+                                )
+                            )
+            , test "parses an event failure when step involves Selector.style" <|
+                \() ->
+                    parse
+                        [ "▼ Query.fromHtml"
+                        , ""
+                        , "    <body>"
+                        , "        <span style=\"prop:val;prop2:val2\">"
+                        , "            <button>"
+                        , "                CLICK"
+                        , "            </button>"
+                        , "        </span>"
+                        , "    </body>"
+                        , ""
+                        , ""
+                        , "▼ Query.find [ styles prop:val, styles prop2:val2 ]"
+                        , ""
+                        , "    1)  <span style=\"style:style;\">"
+                        , "            <button>"
+                        , "                CLICK"
+                        , "            </button>"
+                        , "        </span>"
+                        , ""
+                        , ""
+                        , "▼ Query.has [ tag \"form\", containing [ tag \"input\", attribute \"type\" \"submit\", attribute \"value\" \"CLICKY\" ]  ]"
+                        , ""
+                        , "✗ has tag \"form\""
+                        , "✗ has containing [ tag \"input\", attribute \"type\" \"submit\", attribute \"value\" \"CLICKY\" ]"
+                        ]
+                        |> Expect.equal
+                            (Ok
+                                (QueryFailure
+                                    (Element "body"
+                                        []
+                                        [ Element "span"
+                                            [ ( "style", "prop:val;prop2:val2" ) ]
+                                            [ Element "button" [] [ Html.Parser.Text "CLICK" ] ]
+                                        ]
+                                    )
+                                    [ FindStep
+                                        [ Style "prop" "val"
+                                        , Style "prop2" "val2"
+                                        ]
+                                        (Element "span"
+                                            [ ( "style", "style:style;" ) ]
+                                            [ Element "button" [] [ Html.Parser.Text "CLICK" ] ]
+                                        )
+                                    ]
+                                    (Has
+                                        [ Tag "form"
+                                        , Containing
+                                            [ Tag "input"
+                                            , Attribute "type" "submit"
+                                            , Attribute "value" "CLICKY"
+                                            ]
+                                        ]
+                                        [ Err "has tag \"form\""
+                                        , Err "has containing [ tag \"input\", attribute \"type\" \"submit\", attribute \"value\" \"CLICKY\" ]"
+                                        ]
+                                    )
+                                )
+                            )
             ]
         ]
 
